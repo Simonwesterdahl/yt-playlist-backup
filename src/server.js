@@ -1,5 +1,8 @@
-const Hapi = require('hapi')
-const good = require('good')
+import Hapi from 'hapi'
+import good from 'good'
+import Boom from 'boom'
+import * as user from './data/user'
+import backup from './lib/backup'
 
 const server = Hapi.server({
 	port: 3000,
@@ -7,7 +10,6 @@ const server = Hapi.server({
 })
 
 const init = async () => {
-
 	try {
 		await server.register([{
 			plugin: good,
@@ -33,11 +35,15 @@ const init = async () => {
 		// Make sure all 500 errors are logged
 		server.ext('onPreResponse', (request, h) => {
 			const { response } = request
-			if (response.output && response.output.statusCode === 500) {
+			if (
+				response.output &&
+				(
+					response.output.statusCode <= 500 ||
+					response.output.statusCode >= 400
+				)
+			) {
+				console.error(request.headers)
 				console.error(response)
-			}
-			if (response.output && response.output.statusCode === 400) {
-				console.error(request)
 			}
 			return h.continue
 		})
@@ -52,17 +58,37 @@ const init = async () => {
 }
 
 server.route({
-	method: '*',
-	path: '/',
-	handler: (request, h) => {
+	method: 'POST',
+	path: '/like/{secret}',
+	handler: async (request, h) => {
 
-		console.log(request)
+		const { secret } = request.params
+
+		console.log(user)
+		await user.getBySecret(secret)
+
+		// return backup(request.payload)
 
 		return {
 			logged: true
 		}
 	}
-});
+})
+
+server.route({
+	method: 'POST',
+	path: '/user',
+	handler: async (request, h) => {
+		console.log(request.payload)
+		const { id } = request.payload
+		const res = await user.create({ id })
+
+		return {
+			success: true,
+			inserted: res,
+		}
+	}
+})
 
 process.on('unhandledRejection', e => {
 	server.log(e)

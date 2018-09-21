@@ -5,18 +5,30 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --inspect ./src/index"
+    "dev": "nodemon index.js",
+    "build": "babel src --out-dir build"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "babel-cli": "^6.26.0",
+    "boom": "^7.2.0",
     "good": "^8.1.1",
     "good-console": "^7.1.0",
     "good-squeeze": "^5.1.0",
-    "hapi": "^17.5.4"
+    "hapi": "^17.5.4",
+    "imgur-uploader": "^4.2.1",
+    "lodash": "^4.17.11",
+    "modli": "^2.1.2",
+    "modli-postgres": "^3.3.0",
+    "ytdl-core": "^0.25.0"
   },
   "private": true,
   "devDependencies": {
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2017": "^6.24.1",
+    "babel-register": "^6.26.0",
     "nodemon": "^1.18.4"
   }
 }
