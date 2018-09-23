@@ -1,15 +1,20 @@
-import { adapter } from 'modli';
-import postgres from 'modli-postgres';
+import Sequelize from 'sequelize'
 
-export default () => {
-	adapter.add({
-		name: 'postgres',
-		source: postgres,
-		config: {
-			host: 'localhost',
-			user: 'playlist-backup',
-			password: 'password',
-			database: 'playlist-backup',
+const sequelize = new Sequelize(
+	'playlist-backup',
+	'playlist-backup',
+	'password',
+	{
+		host: 'localhost',
+		dialect: 'postgres',
+		pool: {
+			max: 5,
+			min: 0,
+			acquire: 30000,
+			idle: 10000
 		},
-	});
-}
+		operatorsAliases: false
+	}
+);
+
+export default sequelize

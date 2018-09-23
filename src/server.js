@@ -1,7 +1,9 @@
 import Hapi from 'hapi'
 import good from 'good'
 import Boom from 'boom'
-import * as user from './data/user'
+import crypto from 'crypto'
+import User from './data/user'
+import UserVideo from './data/user-video'
 import backup from './lib/backup'
 
 const server = Hapi.server({
@@ -63,15 +65,23 @@ server.route({
 	handler: async (request, h) => {
 
 		const { secret } = request.params
-
-		console.log(user)
-		await user.getBySecret(secret)
-
-		// return backup(request.payload)
-
-		return {
-			logged: true
+		const user = await User.getBySecret(secret)
+		if (!user) {
+			throw Boom.notFound('No user found by secret', secret)
 		}
+
+		const video = await backup(request.payload)
+
+		const [userVideo, created] = await UserVideo.findOrCreate({
+			where: { userId: user.id, videoId: video.id },
+			defaults: { userId: user.id, videoId: video.id },
+		})
+
+		if (created) {
+			return h.response({ saved: true }).code(201)
+		}
+
+		return h.response({ saved: true }).code(200)
 	}
 })
 
@@ -79,14 +89,21 @@ server.route({
 	method: 'POST',
 	path: '/user',
 	handler: async (request, h) => {
-		console.log(request.payload)
 		const { id } = request.payload
-		const res = await user.create({ id })
 
-		return {
-			success: true,
-			inserted: res,
+		let user = await User.findById(id)
+		if (user) {
+			throw Boom.badRequest('User already exists', id)
 		}
+
+		const secret = await crypto.randomBytes(24)
+		.toString('base64')
+		.replace(/\+/g, '-')
+		.replace(/\//g, '_')
+		.replace(/\=/g, '')
+		user = await User.create({ id, secret })
+
+		return { user }
 	}
 })
 
