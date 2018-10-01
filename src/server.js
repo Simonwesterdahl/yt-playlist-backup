@@ -97,10 +97,10 @@ server.route({
 		}
 
 		const secret = await crypto.randomBytes(24)
-		.toString('base64')
-		.replace(/\+/g, '-')
-		.replace(/\//g, '_')
-		.replace(/\=/g, '')
+			.toString('base64')
+			.replace(/\+/g, '-')
+			.replace(/\//g, '_')
+			.replace(/\=/g, '')
 		user = await User.create({ id, secret })
 
 		return { user }
